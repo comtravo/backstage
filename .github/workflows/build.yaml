@@ -1,0 +1,82 @@
+name: build
+
+env:
+  ECR_REPOSITORY: ct-backstage
+  ECR_REGISTRY_ID: 940226765273
+  ECR_REGISTRY: 940226765273.dkr.ecr.eu-west-1.amazonaws.com
+  AWS_REGION: eu-west-1
+
+on:
+  push:
+    paths:
+      - Dockerfile
+      - .github/workflows/backstage.yaml
+    branches:
+      - 'master'
+    tags:
+      - '*' # build all tags for now
+      - 'v*.*.*'
+  pull_request:
+    paths:
+      - Dockerfile
+      - .github/workflows/backstage.yaml
+    branches:
+      - 'master'
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACTION_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ACTION_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: ${{ env.ECR_REGISTRY_ID }}
+          skip-logout: true
+
+      - uses: actions/checkout@v2
+      - name: Setup Nodejs
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Setup Nodejs with yarn caching
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: yarn
+
+      - name: Versions check
+        run: |
+          node -v
+          npm -v
+          yarn -v
+
+      - name: Yarn prepare app packages
+        run: |
+          yarn install --frozen-lockfile
+          NODE_OPTIONS=--max_old_space_size=4096 yarn tsc
+          yarn build
+
+      - name: Docker Build'n'Tag
+        run: |
+          docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
+          docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA::7}
+
+      - name: Docker Push
+        run: docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}
+
+      # Clean-up
+      - name: Uninstall Yarn
+        run: npm uninstall -g yarn
