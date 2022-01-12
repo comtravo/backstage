@@ -2,7 +2,6 @@ name: build
 
 env:
   ECR_REPOSITORY: ct-backstage
-  IMAGE_TAG: ${{ github.sha }}
   ECR_REGISTRY_ID: 940226765273
   ECR_REGISTRY: 940226765273.dkr.ecr.eu-west-1.amazonaws.com
   AWS_REGION: eu-west-1
@@ -73,7 +72,8 @@ jobs:
       - name: Docker Build'n'Tag
         run: |
           docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
-          docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+          docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_SHA}
+          docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GITHUB_REF_NAME}
 
       - name: Docker Push
         run: docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}
