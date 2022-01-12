@@ -55,7 +55,7 @@
     "lodash": "^4.17.21",
     "luxon": "^2.0.2",
     "node-fetch": "^2.6.1",
-    "p-limit": "^3.0.2",
+    "p-limit": "^4.0.0",
     "prom-client": "^13.2.0",
     "uuid": "^8.0.0",
     "winston": "^3.2.1",
