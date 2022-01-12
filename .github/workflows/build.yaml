@@ -32,12 +32,12 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.ACTION_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.ACTION_AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${AWS_REGION}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v1
         with:
-          registries: ${ECR_REGISTRY_ID}
+          registries: ${{ env.ECR_REGISTRY_ID }}
           skip-logout: true
 
       - uses: actions/checkout@v2
