@@ -14,6 +14,9 @@ on:
       - .github/workflows/backstage.yaml
     branches:
       - 'master'
+    tags:
+      - '*' # build all tags for now
+      - 'v*.*.*'
   pull_request:
     paths:
       - Dockerfile
